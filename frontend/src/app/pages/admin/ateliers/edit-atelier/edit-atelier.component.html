@@ -1,0 +1,223 @@
+
+<div class="min-h-screen bg-slate-100">
+
+  <!-- Header -->
+  <header class="bg-slate-900 text-white px-6 py-5">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-xl font-bold">Formation Platform</h1>
+        <p class="text-sm text-slate-400">Administration</p>
+      </div>
+
+      <a routerLink="/admin/dashboard"
+        class="text-sm text-slate-300 hover:text-white">
+        Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-6">
+
+    <!-- Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">
+          Modifier un atelier
+        </h2>
+
+        <p class="text-sm text-slate-500 mt-1">
+          Modifiez les informations de cet atelier.
+        </p>
+      </div>
+
+      <a routerLink="/admin/ateliers"
+        class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-white">
+        ← Retour aux ateliers
+      </a>
+
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loadingData"
+      class="bg-white rounded-xl border p-10 text-center text-slate-500">
+      Chargement des informations de l'atelier...
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMessage && !loadingData"
+      class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Form -->
+    <form
+      *ngIf="!loadingData && !errorMessage"
+      [formGroup]="atelierForm"
+      (ngSubmit)="submit()"
+      class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
+
+      <!-- Error -->
+      <div *ngIf="errorMessage"
+        class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Informations générales -->
+      <section>
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+          Informations générales
+        </h3>
+
+        <div class="space-y-4">
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Titre de l'atelier *
+            </label>
+
+            <input
+              type="text"
+              formControlName="title"
+              placeholder="Titre de l'atelier"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Description
+            </label>
+
+            <textarea
+              formControlName="description"
+              rows="5"
+              placeholder="Description de l'atelier..."
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Lieu *
+            </label>
+
+            <input
+              type="text"
+              formControlName="lieu"
+              placeholder="Lieu de l'atelier"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+        </div>
+      </section>
+
+      <hr class="border-slate-200">
+
+      <!-- Dates and capacity -->
+      <section>
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+          Dates et capacité
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Date de début *
+            </label>
+
+            <input
+              type="datetime-local"
+              formControlName="date_debut"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Date de fin *
+            </label>
+
+            <input
+              type="datetime-local"
+              formControlName="date_fin"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Capacité maximale *
+            </label>
+
+            <input
+              type="number"
+              formControlName="capacite"
+              min="1"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Statut *
+            </label>
+
+            <select
+              formControlName="statut"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+
+              <option value="planifie">Planifié</option>
+              <option value="en_cours">En cours</option>
+              <option value="termine">Terminé</option>
+              <option value="annule">Annulé</option>
+
+            </select>
+          </div>
+
+        </div>
+      </section>
+
+      <hr class="border-slate-200">
+
+      <!-- Image -->
+      <section>
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+          Image de l'atelier
+        </h3>
+
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onImageSelected($event)"
+          class="w-full border border-slate-300 rounded-lg px-4 py-3 bg-white">
+
+        <p class="text-xs text-slate-500 mt-2">
+          Sélectionnez une nouvelle image uniquement si vous souhaitez remplacer l'ancienne.
+        </p>
+
+        <p *ngIf="selectedImage"
+          class="text-sm text-green-700 mt-2">
+          Nouvelle image : {{ selectedImage.name }}
+        </p>
+      </section>
+
+      <!-- Buttons -->
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-slate-200">
+
+        <a routerLink="/admin/ateliers"
+          class="px-5 py-3 text-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+          Annuler
+        </a>
+
+        <button
+          type="submit"
+          [disabled]="loading"
+          class="px-6 py-3 rounded-lg bg-blue-700 text-white font-semibold hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed">
+
+          {{ loading ? 'Modification...' : 'Enregistrer les modifications' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </main>
+</div>

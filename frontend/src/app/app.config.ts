@@ -10,7 +10,9 @@ import { CookieService } from 'ngx-cookie-service';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(
+      withInterceptors([authInterceptor])
+    ),
     CookieService
   ]
 };

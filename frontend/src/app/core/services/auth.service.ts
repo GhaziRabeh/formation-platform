@@ -34,16 +34,22 @@ export class AuthService {
   // =====================================
 
   getToken(): string | null {
-    return this.cookieService.get('token') || null;
+    const token = this.cookieService.get('token');
+    return token || null;
   }
 
   setToken(token: string): void {
+    // Supprimer les anciennes versions du cookie
+    this.cookieService.delete('token', '/', 'localhost');
+    this.cookieService.delete('token', '/');
+
+    // Enregistrer un cookie sans domaine explicite
     this.cookieService.set(
       'token',
       token,
       1,
       '/',
-      'localhost',
+      undefined,
       false,
       'Lax'
     );
@@ -51,6 +57,7 @@ export class AuthService {
 
   removeToken(): void {
     this.cookieService.delete('token', '/', 'localhost');
+    this.cookieService.delete('token', '/');
   }
 
   // =====================================
@@ -65,7 +72,7 @@ export class AuthService {
   }
 
   // =====================================
-  // VERIFY EMAIL OTP
+  // VERIFY EMAIL
   // =====================================
 
   verifyEmail(data: VerifyEmailRequest): Observable<AuthResponse> {
@@ -76,7 +83,7 @@ export class AuthService {
   }
 
   // =====================================
-  // RESEND EMAIL OTP
+  // RESEND OTP
   // =====================================
 
   resendEmailOtp(email: string): Observable<AuthResponse> {
@@ -108,7 +115,7 @@ export class AuthService {
   }
 
   // =====================================
-  // CURRENT AUTHENTICATED USER
+  // CURRENT USER
   // =====================================
 
   getCurrentUser(): Observable<User> {
@@ -167,7 +174,7 @@ export class AuthService {
   }
 
   // =====================================
-  // AUTHENTICATION STATUS
+  // AUTHENTICATION
   // =====================================
 
   isAuthenticated(): boolean {
@@ -175,7 +182,7 @@ export class AuthService {
   }
 
   // =====================================
-  // ROLE CHECK
+  // ROLE
   // =====================================
 
   hasRole(role: string): boolean {

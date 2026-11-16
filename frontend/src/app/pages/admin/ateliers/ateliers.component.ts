@@ -1,74 +1,145 @@
-import { Component } from '@angular/core';
+
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import {
+  Atelier,
+  AtelierStatut
+} from 'types/atelier.interface';
+
+import { AtelierService } from 'src/app/core/services/atelier.service';
+
 @Component({
   selector: 'app-ateliers',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink
+  ],
   templateUrl: './ateliers.component.html',
   styleUrls: ['./ateliers.component.css']
 })
-export class AteliersComponent {
+export class AteliersComponent implements OnInit {
 
- search = '';
-  selectedStatus = '';
+  search = '';
 
-  ateliers = [
-    {
-      id: 1,
-      title: 'Développement Web',
-      description: 'Formation HTML, CSS et JavaScript',
-      lieu: 'Nabeul',
-      formateur: 'Ahmed Ben Ali',
-      date_debut: '2026-11-20',
-      date_fin: '2026-11-22',
-      capacite: 25,
-      statut: 'planifie'
-    },
-    {
-      id: 2,
-      title: 'Angular Avancé',
-      description: 'Développement avec Angular',
-      lieu: 'Tunis',
-      formateur: 'Mohamed Salah',
-      date_debut: '2026-11-25',
-      date_fin: '2026-11-28',
-      capacite: 20,
-      statut: 'en_cours'
-    },
-    {
-      id: 3,
-      title: 'Laravel API',
-      description: 'Création des API REST',
-      lieu: 'Nabeul',
-      formateur: 'Sami Trabelsi',
-      date_debut: '2026-11-28',
-      date_fin: '2026-11-30',
-      capacite: 15,
-      statut: 'termine'
-    }
-  ];
+  selectedStatus: AtelierStatut | '' = '';
 
-  get filteredAteliers() {
+  ateliers: Atelier[] = [];
+
+  loading = false;
+
+  errorMessage = '';
+
+  constructor(
+    private atelierService: AtelierService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadAteliers();
+  }
+
+  loadAteliers(): void {
+
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.atelierService.getAll().subscribe({
+
+      next: data => {
+
+        this.ateliers = data;
+        this.loading = false;
+
+      },
+
+      error: error => {
+
+        console.error('Erreur chargement ateliers:', error);
+
+        this.errorMessage =
+          error.error?.message ||
+          'Impossible de charger les ateliers.';
+
+        this.loading = false;
+
+      }
+
+    });
+
+  }
+
+  get filteredAteliers(): Atelier[] {
+
+    const searchValue = this.search.toLowerCase().trim();
+
     return this.ateliers.filter(atelier => {
+
       const matchesSearch =
-        atelier.title.toLowerCase().includes(this.search.toLowerCase()) ||
-        atelier.formateur.toLowerCase().includes(this.search.toLowerCase());
+        (atelier.title || '').toLowerCase().includes(searchValue) ||
+        (atelier.formateur?.name || '').toLowerCase().includes(searchValue);
 
       const matchesStatus =
-        !this.selectedStatus || atelier.statut === this.selectedStatus;
+        !this.selectedStatus ||
+        atelier.statut === this.selectedStatus;
 
       return matchesSearch && matchesStatus;
+
     });
+
+  }
+
+  getStatutLabel(statut: AtelierStatut): string {
+
+    const labels: Record<AtelierStatut, string> = {
+
+      planifie: 'Planifié',
+      en_cours: 'En cours',
+      termine: 'Terminé',
+      annule: 'Annulé'
+
+    };
+
+    return labels[statut];
+
   }
 
   deleteAtelier(id: number): void {
-    const confirmed = confirm('Voulez-vous vraiment supprimer cet atelier ?');
 
-    if (confirmed) {
-      this.ateliers = this.ateliers.filter(atelier => atelier.id !== id);
+    const confirmed = confirm(
+      'Voulez-vous vraiment supprimer cet atelier ?'
+    );
+
+    if (!confirmed) {
+      return;
     }
+
+    this.atelierService.delete(id).subscribe({
+
+      next: () => {
+
+        this.ateliers = this.ateliers.filter(
+          atelier => atelier.id !== id
+        );
+
+      },
+
+      error: error => {
+
+        console.error('Erreur suppression:', error);
+
+        alert(
+          error.error?.message ||
+          'Impossible de supprimer cet atelier.'
+        );
+
+      }
+
+    });
+
   }
+
 }

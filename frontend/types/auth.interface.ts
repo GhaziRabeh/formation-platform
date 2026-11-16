@@ -1,9 +1,18 @@
-import { User } from './user.interface';
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
 
 export interface AuthResponse {
-  message: string;
+  message?: string;
   token?: string;
-  user?: User;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    role: 'admin' | 'formateur' | 'participant';
+  };
 }
 
 export interface RegisterRequest {
@@ -11,11 +20,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   password_confirmation: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
 }
 
 export interface VerifyEmailRequest {

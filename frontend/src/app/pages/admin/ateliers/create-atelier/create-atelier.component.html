@@ -1,0 +1,206 @@
+
+<div class="min-h-screen bg-slate-100">
+
+  <header class="bg-slate-900 text-white px-6 py-5">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-xl font-bold">Formation Platform</h1>
+      <p class="text-sm text-slate-400">Administration</p>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-6">
+
+    <div class="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">
+          Ajouter un atelier
+        </h2>
+        <p class="text-sm text-slate-500 mt-1">
+          Créez un nouvel atelier de formation.
+        </p>
+      </div>
+
+      <a routerLink="/admin/ateliers"
+        class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-white">
+        ← Retour
+      </a>
+
+    </div>
+
+    <form
+      [formGroup]="atelierForm"
+      (ngSubmit)="submit()"
+      class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
+
+      <div *ngIf="errorMessage"
+        class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+        {{ errorMessage }}
+      </div>
+
+      <!-- General information -->
+      <section>
+
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+          Informations générales
+        </h3>
+
+        <div class="space-y-4">
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Titre *
+            </label>
+
+            <input
+              type="text"
+              formControlName="title"
+              placeholder="Titre de l'atelier"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3">
+
+            <p *ngIf="atelierForm.get('title')?.touched && atelierForm.get('title')?.invalid"
+              class="text-red-500 text-xs mt-1">
+              Le titre est obligatoire.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Description
+            </label>
+
+            <textarea
+              formControlName="description"
+              rows="5"
+              placeholder="Description de l'atelier..."
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 resize-none"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Lieu *
+            </label>
+
+            <input
+              type="text"
+              formControlName="lieu"
+              placeholder="Lieu de l'atelier"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3">
+          </div>
+
+        </div>
+
+      </section>
+
+      <hr class="border-slate-200">
+
+      <!-- Dates -->
+      <section>
+
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+          Dates et capacité
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Date de début *
+            </label>
+
+            <input
+              type="datetime-local"
+              formControlName="date_debut"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Date de fin *
+            </label>
+
+            <input
+              type="datetime-local"
+              formControlName="date_fin"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Capacité *
+            </label>
+
+            <input
+              type="number"
+              formControlName="capacite"
+              min="1"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Statut *
+            </label>
+
+            <select
+              formControlName="statut"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3">
+
+              <option value="planifie">Planifié</option>
+              <option value="en_cours">En cours</option>
+              <option value="termine">Terminé</option>
+              <option value="annule">Annulé</option>
+
+            </select>
+          </div>
+
+        </div>
+
+      </section>
+
+      <hr class="border-slate-200">
+
+      <!-- Image -->
+      <section>
+
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+          Image de l'atelier
+        </h3>
+
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onImageSelected($event)"
+          class="w-full border border-slate-300 rounded-lg px-4 py-3">
+
+        <p *ngIf="selectedImage"
+          class="text-sm text-green-700 mt-2">
+          Image sélectionnée : {{ selectedImage.name }}
+        </p>
+
+      </section>
+
+      <!-- Actions -->
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t">
+
+        <a routerLink="/admin/ateliers"
+          class="px-5 py-3 text-center rounded-lg border border-slate-300 text-slate-700">
+          Annuler
+        </a>
+
+        <button
+          type="submit"
+          [disabled]="loading"
+          class="px-6 py-3 rounded-lg bg-blue-700 text-white font-semibold hover:bg-blue-800 disabled:opacity-50">
+
+          {{ loading ? 'Enregistrement...' : 'Créer l’atelier' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </main>
+
+</div>
