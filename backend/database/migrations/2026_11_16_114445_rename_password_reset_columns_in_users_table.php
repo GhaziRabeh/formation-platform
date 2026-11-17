@@ -6,11 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // Skip on fresh database
+        if (! Schema::hasColumn('users', 'password_reset_token')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->renameColumn(
                 'password_reset_token',
@@ -26,6 +28,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('users', 'password_reset_otp_hash')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->renameColumn(
                 'password_reset_otp_hash',

@@ -11,14 +11,33 @@ class AtelierService
 {
     public function getAll(User $user)
     {
+        // Count active participants
+        $participantsCount = [
+            'inscriptions as participants_count' => function ($query) {
+                $query->whereIn('statut', ['en_attente', 'confirmee']);
+            },
+        ];
+
         if ($user->isAdmin()) {
             return Atelier::with('formateur')
+                ->withCount($participantsCount)
                 ->latest()
+                ->get();
+        }
+
+        // Participant catalogue
+        if ($user->isParticipant()) {
+            return Atelier::with('formateur')
+                ->withCount($participantsCount)
+                ->where('statut', 'planifie')
+                ->where('date_debut', '>', now())
+                ->orderBy('date_debut')
                 ->get();
         }
 
         return $user->ateliersAnimes()
             ->with('formateur')
+            ->withCount($participantsCount)
             ->latest()
             ->get();
     }

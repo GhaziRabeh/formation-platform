@@ -22,8 +22,9 @@
       </div>
 
       <a routerLink="/admin/ateliers"
-        class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-white">
-        ← Retour
+        class="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-white">
+        <lucide-icon [img]="ArrowLeft" class="w-4 h-4 shrink-0"></lucide-icon>
+        Retour
       </a>
 
     </div>
@@ -86,6 +87,38 @@
               formControlName="lieu"
               placeholder="Lieu de l'atelier"
               class="w-full border border-slate-300 rounded-lg px-4 py-3">
+
+            <p *ngIf="atelierForm.get('lieu')?.touched && atelierForm.get('lieu')?.invalid"
+              class="text-red-500 text-xs mt-1">
+              Le lieu est obligatoire.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Formateur *
+            </label>
+
+            <select
+              formControlName="formateur_id"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3">
+
+              <option value="">Choisir un formateur</option>
+              <option *ngFor="let formateur of formateurs" [value]="formateur.id">
+                {{ formateur.name }} ({{ formateur.email }})
+              </option>
+
+            </select>
+
+            <p *ngIf="atelierForm.get('formateur_id')?.touched && atelierForm.get('formateur_id')?.invalid"
+              class="text-red-500 text-xs mt-1">
+              Le formateur est obligatoire.
+            </p>
+
+            <p *ngIf="formateurs.length === 0"
+              class="text-slate-500 text-xs mt-1">
+              Aucun formateur disponible.
+            </p>
           </div>
 
         </div>

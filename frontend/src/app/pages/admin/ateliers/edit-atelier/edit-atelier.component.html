@@ -32,8 +32,9 @@
       </div>
 
       <a routerLink="/admin/ateliers"
-        class="inline-flex items-center justify-center px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-white">
-        ← Retour aux ateliers
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-white">
+        <lucide-icon [img]="ArrowLeft" class="w-4 h-4 shrink-0"></lucide-icon>
+        Retour aux ateliers
       </a>
 
     </div>
@@ -44,15 +45,15 @@
       Chargement des informations de l'atelier...
     </div>
 
-    <!-- Error -->
-    <div *ngIf="errorMessage && !loadingData"
+    <!-- Load error -->
+    <div *ngIf="loadError && !loadingData"
       class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
-      {{ errorMessage }}
+      {{ loadError }}
     </div>
 
     <!-- Form -->
     <form
-      *ngIf="!loadingData && !errorMessage"
+      *ngIf="!loadingData && !loadError"
       [formGroup]="atelierForm"
       (ngSubmit)="submit()"
       class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
@@ -105,6 +106,28 @@
               formControlName="lieu"
               placeholder="Lieu de l'atelier"
               class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              Formateur *
+            </label>
+
+            <select
+              formControlName="formateur_id"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+
+              <option value="">Choisir un formateur</option>
+              <option *ngFor="let formateur of formateurs" [value]="formateur.id">
+                {{ formateur.name }} ({{ formateur.email }})
+              </option>
+
+            </select>
+
+            <p *ngIf="atelierForm.get('formateur_id')?.touched && atelierForm.get('formateur_id')?.invalid"
+              class="text-red-500 text-xs mt-1">
+              Le formateur est obligatoire.
+            </p>
           </div>
 
         </div>

@@ -27,6 +27,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
   errorMessage = '';
+  emailNotVerified = false;
 
   constructor(
     private fb: FormBuilder,
@@ -42,6 +43,7 @@ export class LoginComponent {
   login(): void {
 
     this.errorMessage = '';
+    this.emailNotVerified = false;
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -56,14 +58,12 @@ export class LoginComponent {
 
         this.loading = false;
 
-        console.log('LOGIN RESPONSE:', response);
-
         if (!response.token || !response.user) {
           this.errorMessage = 'Réponse de connexion invalide.';
           return;
         }
 
-        // Redirection selon le rôle
+        // Redirect by role
         switch (response.user.role) {
 
           case 'admin':
@@ -89,11 +89,13 @@ export class LoginComponent {
 
         this.loading = false;
 
-        console.error('Erreur login:', error);
-
         this.errorMessage =
           error.error?.message ||
           'Email ou mot de passe incorrect.';
+
+        // Email not verified
+        this.emailNotVerified =
+          error.error?.message === 'Email address is not verified.';
       }
     });
   }

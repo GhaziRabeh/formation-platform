@@ -26,6 +26,7 @@ class RegisterService
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'password' => Hash::make($data['password']),
+                    'role' => $data['role'],
                     'email_otp_hash' => Hash::make($otp),
                     'email_otp_expires_at' => now()->addMinutes(10),
                 ]);
@@ -71,5 +72,35 @@ class RegisterService
             'email_otp_hash' => null,
             'email_otp_expires_at' => null,
         ])->save();
+    }
+
+    public function resendEmailOtp(array $data): void
+    {
+        $user = User::where('email', $data['email'])->first();
+
+        if (! $user) {
+            throw RegisterException::emailNotFound();
+        }
+
+        if ($user->email_verified_at !== null) {
+            throw RegisterException::emailAlreadyVerified();
+        }
+
+        $otp = (string) random_int(100000, 999999);
+
+        try {
+            $user->forceFill([
+                'email_otp_hash' => Hash::make($otp),
+                'email_otp_expires_at' => now()->addMinutes(10),
+            ])->save();
+
+            Mail::to($user->email)->send(
+                new VerifyEmailOtpMail($otp)
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            throw RegisterException::otpSendingFailed();
+        }
     }
 }

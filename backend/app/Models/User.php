@@ -18,17 +18,23 @@ class User extends Authenticatable
         'email_otp_hash',
         'email_otp_expires_at',
         'email_verified_at',
+        'role',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'token',
         'email_otp_hash',
+        'email_otp_expires_at',
+        'password_reset_otp_hash',
+        'password_reset_otp_expires_at',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'email_otp_expires_at' => 'datetime',
+        'password_reset_otp_expires_at' => 'datetime',
     ];
 
     public function isAdmin(): bool
@@ -46,19 +52,19 @@ class User extends Authenticatable
         return $this->role === 'participant';
     }
 
-    // Ateliers animés par le formateur
+    // Formateur ateliers
     public function ateliersAnimes()
     {
         return $this->hasMany(Atelier::class, 'formateur_id');
     }
 
-    // Inscriptions du participant
+    // Participant inscriptions
     public function inscriptions()
     {
         return $this->hasMany(Inscription::class);
     }
 
-    // Ateliers auxquels le participant est inscrit
+    // Participant ateliers
     public function ateliersInscrits()
     {
         return $this->belongsToMany(Atelier::class, 'inscriptions')

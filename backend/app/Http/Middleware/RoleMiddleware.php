@@ -13,7 +13,6 @@ class RoleMiddleware
         Closure $next,
         string ...$roles
     ): Response {
-
         $user = $request->user();
 
         if (! $user) {

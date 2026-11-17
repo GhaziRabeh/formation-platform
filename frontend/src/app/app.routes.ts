@@ -66,6 +66,13 @@ export const routes: Routes = [
       },
 
       {
+        path: 'ateliers/:id/edit',
+        loadComponent: () =>
+          import('./pages/admin/ateliers/edit-atelier/edit-atelier.component')
+            .then(m => m.EditAtelierComponent),
+      },
+
+      {
         path: 'inscriptions',
         loadComponent: () =>
           import('./pages/admin/inscriptions/inscriptions.component')
@@ -98,6 +105,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/formateur/mes-ateliers/mes-ateliers.component')
             .then(m => m.MesAteliersComponent),
+      },
+      {
+        path: 'mes-ateliers/:id/participants',
+        loadComponent: () =>
+          import('./pages/formateur/participants/participants.component')
+            .then(m => m.ParticipantsComponent),
       },
       {
         path: '',

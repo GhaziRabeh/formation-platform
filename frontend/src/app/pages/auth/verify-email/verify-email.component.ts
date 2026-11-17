@@ -3,16 +3,20 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { LucideAngularModule, Mail } from 'lucide-angular';
 
 @Component({
   selector: 'app-verify-email',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, LucideAngularModule],
   templateUrl: './verify-email.component.html'
 })
 export class VerifyEmailComponent {
 
+  readonly Mail = Mail;
+
   loading = false;
+  resending = false;
   errorMessage = '';
   successMessage = '';
 
@@ -41,6 +45,7 @@ export class VerifyEmailComponent {
 
     this.loading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     this.authService.verifyEmail(this.verifyForm.getRawValue()).subscribe({
       next: () => this.router.navigate(['/login']),
@@ -54,18 +59,24 @@ export class VerifyEmailComponent {
   resendOtp(): void {
     const email = this.verifyForm.controls.email.value;
 
-    if (!email) {
-      this.errorMessage = 'Veuillez saisir votre email.';
+    if (!email || this.verifyForm.controls.email.invalid) {
+      this.errorMessage = 'Veuillez saisir une adresse email valide.';
+      this.successMessage = '';
       return;
     }
+
+    this.resending = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
     this.authService.resendEmailOtp(email).subscribe({
       next: response => {
         this.successMessage = response.message || 'Code envoyé.';
-        this.errorMessage = '';
+        this.resending = false;
       },
       error: error => {
         this.errorMessage = error.error?.message || 'Erreur lors de l’envoi.';
+        this.resending = false;
       }
     });
   }

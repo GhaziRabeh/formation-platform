@@ -1,1 +1,173 @@
-<p>participants works!</p>
+<div class="min-h-screen bg-slate-100 flex">
+
+  <!-- Sidebar (shared) -->
+  <app-sidebar role="formateur"></app-sidebar>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0">
+
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+
+      <div>
+        <h2 class="text-xl font-bold text-slate-800">
+          Participants
+        </h2>
+        <p class="text-sm text-slate-500">
+          {{ atelier?.title || 'Atelier' }}
+        </p>
+      </div>
+
+      <a routerLink="/formateur/mes-ateliers"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 text-sm text-center">
+        <lucide-icon [img]="ArrowLeft" class="w-4 h-4 shrink-0"></lucide-icon>
+        Retour à mes ateliers
+      </a>
+
+    </header>
+
+    <div class="p-6">
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="bg-white rounded-xl border p-10 text-center text-slate-500">
+        Chargement des participants...
+      </div>
+
+      <!-- Load error -->
+      <div *ngIf="!loading && loadError" class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+
+        {{ loadError }}
+
+        <button (click)="loadData()" class="ml-3 font-semibold underline">
+          Réessayer
+        </button>
+
+      </div>
+
+      <ng-container *ngIf="!loading && !loadError">
+
+        <!-- Atelier info -->
+        <div *ngIf="atelier" class="bg-white rounded-xl border border-slate-200 p-5 mb-6 flex flex-col sm:flex-row gap-5">
+
+          <img *ngIf="atelier.image"
+            [src]="atelier.image"
+            [alt]="atelier.title"
+            class="w-full sm:w-40 h-28 object-cover rounded-lg">
+
+          <div class="text-sm text-slate-600 space-y-1">
+            <p class="font-bold text-slate-800 text-base">{{ atelier.title }}</p>
+            <p class="flex items-center gap-2"><lucide-icon [img]="MapPin" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.lieu }}</p>
+            <p class="flex items-center gap-2"><lucide-icon [img]="Calendar" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.date_debut | date:'dd/MM/yyyy HH:mm' }} <lucide-icon [img]="ArrowRight" class="w-4 h-4 shrink-0 text-slate-400"></lucide-icon> {{ atelier.date_fin | date:'dd/MM/yyyy HH:mm' }}</p>
+            <p class="flex items-center gap-2"><lucide-icon [img]="Users" class="w-4 h-4 shrink-0"></lucide-icon>{{ placesOccupees }} / {{ atelier.capacite }} places occupées</p>
+          </div>
+
+        </div>
+
+        <!-- Counters -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <p class="text-sm text-slate-500">En attente</p>
+            <p class="text-2xl font-bold text-amber-600 mt-1">{{ countByStatus('en_attente') }}</p>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <p class="text-sm text-slate-500">Confirmées</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">{{ countByStatus('confirmee') }}</p>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-slate-200">
+            <p class="text-sm text-slate-500">Annulées</p>
+            <p class="text-2xl font-bold text-red-600 mt-1">{{ countByStatus('annulee') }}</p>
+          </div>
+
+        </div>
+
+        <!-- Action error -->
+        <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-5">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Search and filter -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 mb-5">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 flex text-slate-400 pointer-events-none"><lucide-icon [img]="Search" class="w-4 h-4"></lucide-icon></span>
+              <input type="text" [(ngModel)]="search" placeholder="Rechercher par nom ou email..."
+                class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <select [(ngModel)]="selectedStatus"
+              class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+
+              <option value="">Tous les statuts</option>
+              <option value="en_attente">En attente</option>
+              <option value="confirmee">Confirmée</option>
+              <option value="annulee">Annulée</option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+        <!-- Participants list -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+          <p *ngIf="filteredInscriptions.length === 0" class="p-8 text-center text-slate-500">
+            Aucun participant trouvé.
+          </p>
+
+          <ul class="divide-y divide-slate-100">
+
+            <li *ngFor="let inscription of filteredInscriptions"
+              class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 hover:bg-slate-50">
+
+              <div class="min-w-0">
+                <p class="font-semibold text-slate-800">
+                  {{ inscription.participant.name || 'Inconnu' }}
+                </p>
+                <p class="text-xs text-slate-500 break-all">
+                  {{ inscription.participant.email }}
+                </p>
+                <p class="text-xs text-slate-400 mt-1">
+                  Inscrit le {{ inscription.date_inscription | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-3">
+
+                <app-statut-badge [statut]="inscription.statut"></app-statut-badge>
+
+                <button *ngIf="inscription.statut === 'en_attente'"
+                  (click)="updateStatus(inscription, 'confirmee')"
+                  [disabled]="updatingId === inscription.id"
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-green-200 text-green-700 text-sm font-medium hover:bg-green-50 disabled:opacity-50">
+                  <lucide-icon [img]="Check" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Confirmer
+                </button>
+
+                <button *ngIf="inscription.statut !== 'annulee'"
+                  (click)="updateStatus(inscription, 'annulee')"
+                  [disabled]="updatingId === inscription.id"
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 disabled:opacity-50">
+                  <lucide-icon [img]="X" class="w-4 h-4 shrink-0"></lucide-icon>
+                  Annuler
+                </button>
+
+              </div>
+
+            </li>
+
+          </ul>
+
+        </div>
+
+      </ng-container>
+
+    </div>
+
+  </main>
+
+</div>

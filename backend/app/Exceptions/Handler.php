@@ -5,50 +5,30 @@ namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Psr\Log\LogLevel;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * A list of exception types with their corresponding custom log levels.
-     *
-     * @var array<class-string<Throwable>, LogLevel::*>
-     */
     protected $levels = [
-        //
     ];
 
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array<int, class-string<Throwable>>
-     */
     protected $dontReport = [
-        //
     ];
 
-    /**
-     * A list of the inputs that are never flashed to the session on validation exceptions.
-     *
-     * @var array<int, string>
-     */
     protected $dontFlash = [
         'current_password',
         'password',
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
         });
 
-        // Return JSON instead of redirecting to a missing login route.
+        // Unauthenticated
         $this->renderable(function (
             AuthenticationException $e,
             Request $request
@@ -60,7 +40,7 @@ class Handler extends ExceptionHandler
             }
         });
 
-        // Handle registration exceptions.
+        // Register errors
         $this->renderable(function (
             RegisterException $e,
             Request $request
@@ -70,7 +50,42 @@ class Handler extends ExceptionHandler
             ], $e->getCode() ?: 422);
         });
 
+        // Login errors
+        $this->renderable(function (
+            LoginException $e,
+            Request $request
+        ) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getCode() ?: 401);
+        });
+
+        // Logout errors
+        $this->renderable(function (
+            LogoutException $e,
+            Request $request
+        ) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getCode() ?: 500);
+        });
+
+        // Forgot password errors
+        $this->renderable(function (
+            ForgotPasswordException $e,
+            Request $request
+        ) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getCode() ?: 422);
+        });
+
         $this->renderable(function (Throwable $e, Request $request) {
+            // Validation errors
+            if ($e instanceof ValidationException) {
+                return null;
+            }
+
             if ($request->is('api/*')) {
                 return response()->json([
                     'message' => $e->getMessage() ?: 'Server error.',

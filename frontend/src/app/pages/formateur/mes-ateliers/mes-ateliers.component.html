@@ -1,1 +1,169 @@
-<p>mes-ateliers works!</p>
+<div class="min-h-screen bg-slate-100 flex">
+
+  <!-- Sidebar (shared) -->
+  <app-sidebar role="formateur"></app-sidebar>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0">
+
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+
+      <div>
+        <h2 class="text-xl font-bold text-slate-800">
+          Mes ateliers
+        </h2>
+        <p class="text-sm text-slate-500">
+          Les ateliers que vous animez
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <p class="text-sm font-semibold text-slate-800">{{ userName }}</p>
+          <p class="text-xs text-slate-500">Formateur</p>
+        </div>
+
+        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+          {{ userName.charAt(0).toUpperCase() }}
+        </div>
+
+        <!-- Logout on mobile (sidebar hidden) -->
+        <button (click)="logout()" class="md:hidden text-slate-500 ml-2" title="Déconnexion" aria-label="Déconnexion">
+          <lucide-icon [img]="LogOut" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+    </header>
+
+    <div class="p-6">
+
+      <!-- Statistics -->
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-sm text-slate-500">Mes ateliers</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">{{ ateliers.length }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-sm text-slate-500">Planifiés</p>
+          <p class="text-2xl font-bold text-blue-600 mt-1">{{ countByStatus('planifie') }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-sm text-slate-500">En cours</p>
+          <p class="text-2xl font-bold text-green-600 mt-1">{{ countByStatus('en_cours') }}</p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200">
+          <p class="text-sm text-slate-500">Participants</p>
+          <p class="text-2xl font-bold text-slate-800 mt-1">{{ totalParticipants }}</p>
+        </div>
+
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-5">
+
+        {{ errorMessage }}
+
+        <button (click)="loadAteliers()" class="ml-3 font-semibold underline">
+          Réessayer
+        </button>
+
+      </div>
+
+      <!-- Search and filter -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 mb-5">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 flex text-slate-400 pointer-events-none"><lucide-icon [img]="Search" class="w-4 h-4"></lucide-icon></span>
+            <input type="text" [(ngModel)]="search" placeholder="Rechercher un atelier ou un lieu..."
+              class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <select [(ngModel)]="selectedStatus"
+            class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+
+            <option value="">Tous les statuts</option>
+            <option value="planifie">Planifié</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminé</option>
+            <option value="annule">Annulé</option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="bg-white rounded-xl border p-10 text-center text-slate-500">
+        Chargement de vos ateliers...
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!loading && filteredAteliers.length === 0"
+        class="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500">
+        Aucun atelier trouvé.
+      </div>
+
+      <!-- Ateliers -->
+      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+        <div *ngFor="let atelier of filteredAteliers"
+          class="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+
+          <!-- Image (from backend) -->
+          <img *ngIf="atelier.image"
+            [src]="atelier.image"
+            [alt]="atelier.title"
+            class="w-full h-40 object-cover">
+
+          <div class="p-5 flex flex-col flex-1">
+
+            <div class="flex justify-between items-start gap-3">
+
+              <h3 class="font-bold text-slate-800">
+                {{ atelier.title }}
+              </h3>
+
+              <app-statut-badge [statut]="atelier.statut"></app-statut-badge>
+
+            </div>
+
+            <p class="text-sm text-slate-500 mt-2 line-clamp-2">
+              {{ atelier.description || 'Aucune description' }}
+            </p>
+
+            <div class="mt-4 space-y-2 text-sm text-slate-600">
+              <p class="flex items-center gap-2"><lucide-icon [img]="MapPin" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.lieu }}</p>
+              <p class="flex items-center gap-2"><lucide-icon [img]="Calendar" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.date_debut | date:'dd/MM/yyyy HH:mm' }} <lucide-icon [img]="ArrowRight" class="w-4 h-4 shrink-0 text-slate-400"></lucide-icon> {{ atelier.date_fin | date:'dd/MM/yyyy HH:mm' }}</p>
+              <p class="flex items-center gap-2"><lucide-icon [img]="Users" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.participants_count ?? 0 }} / {{ atelier.capacite }} participants</p>
+            </div>
+
+            <!-- Fill rate -->
+            <div class="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-blue-600 rounded-full"
+                [style.width.%]="atelier.capacite ? ((atelier.participants_count ?? 0) / atelier.capacite) * 100 : 0">
+              </div>
+            </div>
+
+            <a [routerLink]="['/formateur/mes-ateliers', atelier.id, 'participants']"
+              class="mt-5 text-center bg-blue-700 hover:bg-blue-800 text-white py-2 rounded-lg text-sm font-semibold">
+              Voir les participants
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div>

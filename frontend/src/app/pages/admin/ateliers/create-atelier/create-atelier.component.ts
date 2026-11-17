@@ -1,5 +1,5 @@
 
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -10,7 +10,10 @@ import {
 import { Router, RouterLink } from '@angular/router';
 
 import { AtelierService } from 'src/app/core/services/atelier.service';
+import { UserService } from 'src/app/core/services/user.service';
 import { AtelierStatut } from 'types/atelier.interface';
+import { User } from 'types/user.interface';
+import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 
 @Component({
   selector: 'app-create-atelier',
@@ -18,12 +21,15 @@ import { AtelierStatut } from 'types/atelier.interface';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    LucideAngularModule
   ],
   templateUrl: './create-atelier.component.html',
   styleUrls: ['./create-atelier.component.css']
 })
-export class CreateAtelierComponent {
+export class CreateAtelierComponent implements OnInit {
+
+  readonly ArrowLeft = ArrowLeft;
 
   atelierForm: FormGroup;
 
@@ -32,9 +38,12 @@ export class CreateAtelierComponent {
 
   selectedImage: File | null = null;
 
+  formateurs: User[] = [];
+
   constructor(
     private fb: FormBuilder,
     private atelierService: AtelierService,
+    private userService: UserService,
     private router: Router
   ) {
 
@@ -57,7 +66,32 @@ export class CreateAtelierComponent {
       statut: [
         'planifie' as AtelierStatut,
         Validators.required
-      ]
+      ],
+
+      formateur_id: ['', Validators.required]
+
+    });
+
+  }
+
+  ngOnInit(): void {
+    this.loadFormateurs();
+  }
+
+  // Get formateurs
+  loadFormateurs(): void {
+
+    this.userService.getAll('formateur').subscribe({
+
+      next: data => {
+        this.formateurs = data;
+      },
+
+      error: error => {
+        this.errorMessage =
+          error.error?.message ||
+          'Impossible de charger les formateurs.';
+      }
 
     });
 
@@ -81,6 +115,13 @@ export class CreateAtelierComponent {
       return;
     }
 
+    const { date_debut, date_fin } = this.atelierForm.value;
+
+    if (new Date(date_fin) <= new Date(date_debut)) {
+      this.errorMessage = 'La date de fin doit être après la date de début.';
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
 
@@ -98,9 +139,7 @@ export class CreateAtelierComponent {
 
     this.atelierService.create(formData).subscribe({
 
-      next: (response) => {
-
-        console.log('Atelier créé:', response);
+      next: () => {
 
         this.loading = false;
 
@@ -109,8 +148,6 @@ export class CreateAtelierComponent {
       },
 
       error: (error) => {
-
-        console.error('Erreur création:', error);
 
         this.loading = false;
 

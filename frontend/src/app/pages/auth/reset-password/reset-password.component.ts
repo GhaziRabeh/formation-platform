@@ -3,14 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { LucideAngularModule, KeyRound } from 'lucide-angular';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, LucideAngularModule],
   templateUrl: './reset-password.component.html'
 })
 export class ResetPasswordComponent {
+
+  readonly KeyRound = KeyRound;
 
   loading = false;
   errorMessage = '';

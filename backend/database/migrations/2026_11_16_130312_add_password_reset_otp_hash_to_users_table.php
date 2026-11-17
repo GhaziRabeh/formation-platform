@@ -6,11 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // Skip if columns exist
+        if (Schema::hasColumn('users', 'password_reset_otp_hash')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->string('password_reset_otp_hash')->nullable();
             $table->timestamp('password_reset_otp_expires_at')->nullable();

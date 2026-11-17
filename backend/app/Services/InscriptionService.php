@@ -10,11 +10,10 @@ use Illuminate\Validation\ValidationException;
 
 class InscriptionService
 {
-    // Inscrire un participant
+    // Create inscription
     public function inscrire(User $user, int $atelierId): Inscription
     {
         return DB::transaction(function () use ($user, $atelierId) {
-
             $atelier = Atelier::whereKey($atelierId)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -69,7 +68,7 @@ class InscriptionService
         });
     }
 
-    // Liste des inscriptions d'un participant
+    // Get participant inscriptions
     public function mesInscriptions(User $user)
     {
         return $user->inscriptions()
@@ -78,7 +77,7 @@ class InscriptionService
             ->get();
     }
 
-    // Liste des inscriptions d'un atelier
+    // Get atelier inscriptions
     public function inscriptionsAtelier(Atelier $atelier)
     {
         return $atelier->inscriptions()
@@ -87,7 +86,7 @@ class InscriptionService
             ->get();
     }
 
-    // Toutes les inscriptions pour l'Admin
+    // Get all inscriptions
     public function toutesLesInscriptions()
     {
         return Inscription::with([
@@ -99,14 +98,14 @@ class InscriptionService
             ->get();
     }
 
-    // Trouver une inscription
+    // Find inscription
     public function getById(int $id): Inscription
     {
         return Inscription::with(['user', 'atelier.formateur'])
             ->findOrFail($id);
     }
 
-    // Modifier le statut
+    // Update status
     public function updateStatus(
         Inscription $inscription,
         string $statut
@@ -129,7 +128,7 @@ class InscriptionService
         return $inscription->load(['user', 'atelier']);
     }
 
-    // Annuler une inscription
+    // Cancel inscription
     public function annuler(Inscription $inscription): Inscription
     {
         if ($inscription->statut === 'annulee') {

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Atelier extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'description',
@@ -25,19 +28,19 @@ class Atelier extends Model
 
     protected $appends = ['image_url'];
 
-    // Relation avec le formateur
+    // Formateur
     public function formateur()
     {
         return $this->belongsTo(User::class, 'formateur_id');
     }
 
-    // Relation avec les inscriptions
+    // Inscriptions
     public function inscriptions()
     {
         return $this->hasMany(Inscription::class);
     }
 
-    // Relation avec les participants
+    // Participants
     public function participants()
     {
         return $this->belongsToMany(User::class, 'inscriptions')
@@ -45,7 +48,7 @@ class Atelier extends Model
             ->withTimestamps();
     }
 
-    // URL publique de l'image
+    // Image URL
     public function getImageUrlAttribute()
     {
         return $this->image

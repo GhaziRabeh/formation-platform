@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
-import { Atelier } from 'types/atelier.interface';
+import { Atelier, AtelierParticipant } from 'types/atelier.interface';
 
 interface ApiResponse<T> {
   data: T;
@@ -27,6 +27,33 @@ export class AtelierService {
   getAll(): Observable<Atelier[]> {
     return this.http
       .get<ApiResponse<Atelier[]>>(this.apiUrl)
+      .pipe(
+        map(response => response.data)
+      );
+  }
+
+  // GET /api/ateliers/{id}
+  getById(id: number): Observable<Atelier> {
+    return this.http
+      .get<ApiResponse<Atelier>>(`${this.apiUrl}/${id}`)
+      .pipe(
+        map(response => response.data)
+      );
+  }
+
+  // GET /api/ateliers/{id}/participants
+  getParticipants(id: number): Observable<AtelierParticipant[]> {
+    return this.http
+      .get<ApiResponse<AtelierParticipant[]>>(`${this.apiUrl}/${id}/participants`)
+      .pipe(
+        map(response => response.data)
+      );
+  }
+
+  // POST /api/ateliers/{id} (route update côté Laravel)
+  update(id: number, data: FormData): Observable<Atelier> {
+    return this.http
+      .post<ApiResponse<Atelier>>(`${this.apiUrl}/${id}`, data)
       .pipe(
         map(response => response.data)
       );

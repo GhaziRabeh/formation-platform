@@ -7,9 +7,12 @@ use App\Models\User;
 
 class AtelierPolicy
 {
+    // View ateliers
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isFormateur();
+        return $user->isAdmin()
+            || $user->isFormateur()
+            || $user->isParticipant();
     }
 
     public function view(User $user, Atelier $atelier): bool

@@ -1,34 +1,7 @@
 <div class="min-h-screen bg-slate-100 flex">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-slate-900 text-white hidden md:flex flex-col">
-
-    <div class="p-6 border-b border-slate-700">
-      <h1 class="text-xl font-bold">Formation Platform</h1>
-      <p class="text-xs text-slate-400 mt-1">Administration</p>
-    </div>
-
-    <nav class="p-4 space-y-2">
-
-      <a routerLink="/admin/dashboard" class="block p-3 rounded-lg hover:bg-slate-800">
-        📊 Dashboard
-      </a>
-
-      <a routerLink="/admin/ateliers" class="block p-3 rounded-lg bg-blue-600">
-        📚 Ateliers
-      </a>
-
-      <a routerLink="/admin/inscriptions" class="block p-3 rounded-lg hover:bg-slate-800">
-        📝 Inscriptions
-      </a>
-
-      <a routerLink="/admin/users" class="block p-3 rounded-lg hover:bg-slate-800">
-        👥 Utilisateurs
-      </a>
-
-    </nav>
-
-  </aside>
+  <!-- Sidebar (shared) -->
+  <app-sidebar role="admin"></app-sidebar>
 
   <!-- Main -->
   <main class="flex-1 min-w-0">
@@ -58,8 +31,9 @@
         </div>
 
         <a routerLink="/admin/ateliers/create"
-          class="bg-blue-700 hover:bg-blue-800 text-white px-5 py-3 rounded-lg text-sm font-semibold text-center">
-          + Ajouter un atelier
+          class="inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-5 py-3 rounded-lg text-sm font-semibold text-center">
+          <lucide-icon [img]="Plus" class="w-4 h-4 shrink-0"></lucide-icon>
+          Ajouter un atelier
         </a>
 
       </div>
@@ -80,8 +54,11 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          <input type="text" [(ngModel)]="search" placeholder="Rechercher un atelier ou un formateur..."
-            class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 flex text-slate-400 pointer-events-none"><lucide-icon [img]="Search" class="w-4 h-4"></lucide-icon></span>
+            <input type="text" [(ngModel)]="search" placeholder="Rechercher un atelier ou un formateur..."
+              class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
 
           <select [(ngModel)]="selectedStatus"
             class="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
@@ -113,10 +90,11 @@
             <thead class="bg-slate-50 text-slate-500">
               <tr>
                 <th class="p-4">Atelier</th>
+                <th class="p-4 text-center">Image</th>
                 <th class="p-4">Formateur</th>
                 <th class="p-4">Lieu</th>
                 <th class="p-4">Date début</th>
-                <th class="p-4">Capacité</th>
+                <th class="p-4">Participants</th>
                 <th class="p-4">Statut</th>
                 <th class="p-4">Actions</th>
               </tr>
@@ -124,52 +102,86 @@
 
             <tbody>
 
-              <tr *ngFor="let atelier of filteredAteliers" class="border-t border-slate-100 hover:bg-slate-50">
+              <ng-container *ngFor="let atelier of filteredAteliers">
+
+              <tr class="border-t border-slate-100 hover:bg-slate-50">
 
                 <td class="p-4">
                   <p class="font-semibold text-slate-800">
                     {{ atelier.title }}
                   </p>
 
-                  <p class="text-xs text-slate-500 mt-1">
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">
                     {{ atelier.description || 'Aucune description' }}
                   </p>
                 </td>
 
-                <td class="p-4 text-slate-600">
-                  {{ atelier.formateur?.name || 'Non assigné' }}
+                <!-- Image (from backend) -->
+                <td class="p-4 text-center align-middle">
+                  <img *ngIf="atelier.image"
+                    [src]="atelier.image"
+                    [alt]="atelier.title"
+                    class="w-20 h-14 object-cover rounded-lg border border-slate-200 mx-auto">
+
+                  <span *ngIf="!atelier.image" class="text-xs text-slate-400">
+                    Aucune image
+                  </span>
+                </td>
+
+                <!-- Formateur -->
+                <td class="p-4">
+                  <ng-container *ngIf="atelier.formateur?.name; else noFormateur">
+                    <p class="flex items-center gap-2 font-medium text-slate-800">
+                      <lucide-icon [img]="GraduationCap" class="w-4 h-4 shrink-0 text-slate-500"></lucide-icon>
+                      {{ atelier.formateur?.name }}
+                    </p>
+                    <p class="text-xs text-slate-500 mt-1">
+                      {{ atelier.formateur?.email }}
+                    </p>
+                  </ng-container>
+
+                  <ng-template #noFormateur>
+                    <span class="text-amber-600">Non assigné</span>
+                  </ng-template>
                 </td>
 
                 <td class="p-4 text-slate-600">
                   {{ atelier.lieu }}
                 </td>
 
-                <td class="p-4 text-slate-600">
-                  {{ atelier.date_debut | date:'dd/MM/yyyy' }}
+                <td class="p-4 text-slate-600 whitespace-nowrap">
+                  {{ atelier.date_debut | date:'dd/MM/yyyy HH:mm' }}
                 </td>
 
-                <td class="p-4 text-slate-600">
-                  {{ atelier.capacite }} places
-                </td>
+                <!-- Participants -->
+                <td class="p-4 whitespace-nowrap">
+                  <button (click)="toggleParticipants(atelier)"
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700">
 
-                <td class="p-4">
+                    <lucide-icon [img]="Users" class="w-4 h-4 shrink-0"></lucide-icon>
+                    {{ atelier.participants_count ?? 0 }} / {{ atelier.capacite }}
 
-                  <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="{
-                      'bg-blue-100 text-blue-700': atelier.statut === 'planifie',
-                      'bg-green-100 text-green-700': atelier.statut === 'en_cours',
-                      'bg-gray-100 text-gray-700': atelier.statut === 'termine',
-                      'bg-red-100 text-red-700': atelier.statut === 'annule'
-                    }">
+                    <lucide-icon [img]="openedAtelierId === atelier.id ? ChevronUp : ChevronDown" class="w-4 h-4 shrink-0"></lucide-icon>
 
-                    {{ getStatutLabel(atelier.statut) }}
-
-                  </span>
-
+                  </button>
                 </td>
 
                 <td class="p-4">
 
-                  <button (click)="deleteAtelier(atelier.id)" class="text-red-600 hover:text-red-800 font-medium">
+                  <app-statut-badge [statut]="atelier.statut"></app-statut-badge>
+
+                </td>
+
+                <td class="p-4 whitespace-nowrap">
+
+                  <a [routerLink]="['/admin/ateliers', atelier.id, 'edit']"
+                    class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium mr-4">
+                    <lucide-icon [img]="Pencil" class="w-4 h-4 shrink-0"></lucide-icon>
+                    Modifier
+                  </a>
+
+                  <button (click)="deleteAtelier(atelier.id)" class="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-medium">
+                    <lucide-icon [img]="Trash2" class="w-4 h-4 shrink-0"></lucide-icon>
                     Supprimer
                   </button>
 
@@ -177,9 +189,60 @@
 
               </tr>
 
+              <!-- Participants list (responsive) -->
+              <tr *ngIf="openedAtelierId === atelier.id" class="bg-slate-50">
+
+                <td colspan="8" class="px-4 sm:px-6 py-4">
+
+                  <h4 class="font-semibold text-slate-800 mb-3">
+                    Participants de « {{ atelier.title }} »
+                  </h4>
+
+                  <p *ngIf="loadingParticipants" class="text-slate-500">
+                    Chargement des participants...
+                  </p>
+
+                  <p *ngIf="participantsError" class="text-red-600">
+                    {{ participantsError }}
+                  </p>
+
+                  <p *ngIf="!loadingParticipants && !participantsError && participants.length === 0"
+                    class="text-slate-500">
+                    Aucun participant inscrit à cet atelier.
+                  </p>
+
+                  <ul *ngIf="!loadingParticipants && participants.length > 0"
+                    class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100">
+
+                    <li *ngFor="let participant of participants"
+                      class="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+                      <div class="min-w-0">
+                        <p class="font-medium text-slate-800">{{ participant.name }}</p>
+                        <p class="text-xs text-slate-500 break-all">{{ participant.email }}</p>
+                      </div>
+
+                      <div class="flex flex-wrap items-center gap-3 text-xs">
+                        <span class="text-slate-500">
+                          Inscrit le {{ participant.date_inscription | date:'dd/MM/yyyy HH:mm' }}
+                        </span>
+
+                        <app-statut-badge [statut]="participant.statut"></app-statut-badge>
+                      </div>
+
+                    </li>
+
+                  </ul>
+
+                </td>
+
+              </tr>
+
+              </ng-container>
+
               <tr *ngIf="filteredAteliers.length === 0">
 
-                <td colspan="7" class="p-8 text-center text-slate-500">
+                <td colspan="8" class="p-8 text-center text-slate-500">
                   Aucun atelier trouvé.
                 </td>
 

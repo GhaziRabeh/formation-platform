@@ -71,16 +71,4 @@ class Kernel extends HttpKernel
         'verified' => EnsureEmailIsVerified::class,
         'role' => RoleMiddleware::class,
     ];
-    public function handle($request)
-{
-    file_put_contents(
-        storage_path('logs/cors-debug.log'),
-        "KERNEL HANDLE: " . $request->method() .
-        " | PATH: " . $request->path() .
-        " | ORIGIN: " . $request->header('Origin') . PHP_EOL,
-        FILE_APPEND
-    );
-
-    return parent::handle($request);
-}
 }

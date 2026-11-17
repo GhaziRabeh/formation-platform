@@ -26,7 +26,8 @@ export class RegisterComponent {
       name: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
-      password_confirmation: ['', Validators.required]
+      password_confirmation: ['', Validators.required],
+      role: ['participant' as 'participant' | 'formateur', Validators.required]
     });
   }
 

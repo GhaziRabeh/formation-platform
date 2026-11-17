@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\VerifyEmailOtpRequest;
 use App\Services\RegisterService;
@@ -25,6 +26,7 @@ class RegisterController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role,
             ],
         ], 201);
     }
@@ -37,6 +39,17 @@ class RegisterController extends Controller
 
         return response()->json([
             'message' => 'Email verified successfully.',
+        ]);
+    }
+
+    public function resendEmailOtp(ForgotPasswordRequest $request)
+    {
+        $this->registerService->resendEmailOtp(
+            $request->validated()
+        );
+
+        return response()->json([
+            'message' => 'Verification code sent successfully.',
         ]);
     }
 }

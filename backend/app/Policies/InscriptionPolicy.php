@@ -8,19 +8,19 @@ use App\Models\User;
 
 class InscriptionPolicy
 {
-    // Seul un participant peut s'inscrire
+    // Create inscription
     public function create(User $user): bool
     {
         return $user->isParticipant();
     }
 
-    // Consulter ses propres inscriptions
+    // View own inscriptions
     public function viewOwn(User $user, Inscription $inscription): bool
     {
         return $user->id === $inscription->user_id;
     }
 
-    // Admin ou formateur responsable peut consulter
+    // View atelier inscriptions
     public function viewAtelierInscriptions(
         User $user,
         Atelier $atelier
@@ -37,7 +37,7 @@ class InscriptionPolicy
         return $user->isAdmin();
     }
 
-    // Annuler une inscription
+    // Cancel inscription
     public function cancel(User $user, Inscription $inscription): bool
     {
         return $user->id === $inscription->user_id
@@ -48,7 +48,7 @@ class InscriptionPolicy
             );
     }
 
-    // Modifier le statut
+    // Update status
     public function updateStatus(
         User $user,
         Inscription $inscription

@@ -3,14 +3,17 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { LucideAngularModule, Lock } from 'lucide-angular';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, LucideAngularModule],
   templateUrl: './forgot-password.component.html'
 })
 export class ForgotPasswordComponent {
+
+  readonly Lock = Lock;
 
   loading = false;
   errorMessage = '';

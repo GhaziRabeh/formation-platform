@@ -17,7 +17,7 @@ class AtelierController extends Controller
         protected AtelierService $atelierService
     ) {}
 
-    // GET /api/ateliers
+    // Get all ateliers
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Atelier::class);
@@ -29,7 +29,7 @@ class AtelierController extends Controller
         return AtelierResource::collection($ateliers);
     }
 
-    // GET /api/ateliers/{id}
+    // Get atelier
     public function show(int $id)
     {
         $atelier = $this->atelierService->getById($id);
@@ -39,7 +39,7 @@ class AtelierController extends Controller
         return new AtelierResource($atelier);
     }
 
-    // POST /api/ateliers
+    // Create atelier
     public function store(StoreAtelierRequest $request)
     {
         Gate::authorize('create', Atelier::class);
@@ -53,7 +53,7 @@ class AtelierController extends Controller
             ->setStatusCode(201);
     }
 
-    // PUT / PATCH /api/ateliers/{id}
+    // Update atelier
     public function update(UpdateAtelierRequest $request, int $id)
     {
         $atelier = $this->atelierService->getById($id);
@@ -68,7 +68,7 @@ class AtelierController extends Controller
         return new AtelierResource($atelier);
     }
 
-    // DELETE /api/ateliers/{id}
+    // Delete atelier
     public function destroy(int $id)
     {
         $atelier = $this->atelierService->getById($id);
@@ -82,7 +82,7 @@ class AtelierController extends Controller
         ]);
     }
 
-    // GET /api/ateliers/{id}/participants
+    // Get atelier participants
     public function participants(int $id)
     {
         $atelier = $this->atelierService->getById($id);

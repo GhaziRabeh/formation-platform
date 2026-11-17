@@ -18,7 +18,7 @@ class InscriptionController extends Controller
         protected InscriptionService $inscriptionService
     ) {}
 
-    // POST /api/inscriptions
+    // Create inscription
     public function store(StoreInscriptionRequest $request)
     {
         Gate::authorize('create', Inscription::class);
@@ -33,7 +33,7 @@ class InscriptionController extends Controller
             ->setStatusCode(201);
     }
 
-    // GET /api/inscriptions (Admin)
+    // Get all inscriptions
     public function index()
     {
         Gate::authorize('viewAny', Inscription::class);
@@ -44,7 +44,7 @@ class InscriptionController extends Controller
         return InscriptionResource::collection($inscriptions);
     }
 
-    // GET /api/mes-inscriptions
+    // Get my inscriptions
     public function mesInscriptions(Request $request)
     {
         $inscriptions = $this->inscriptionService->mesInscriptions(
@@ -54,12 +54,12 @@ class InscriptionController extends Controller
         return InscriptionResource::collection($inscriptions);
     }
 
-    // GET /api/ateliers/{id}/inscriptions
+    // Get atelier inscriptions
     public function inscriptionsAtelier(int $id)
     {
         $atelier = Atelier::findOrFail($id);
 
-        Gate::authorize('viewAtelierInscriptions', $atelier);
+        Gate::authorize('viewAtelierInscriptions', [Inscription::class, $atelier]);
 
         $inscriptions = $this->inscriptionService
             ->inscriptionsAtelier($atelier);
@@ -67,7 +67,7 @@ class InscriptionController extends Controller
         return InscriptionResource::collection($inscriptions);
     }
 
-    // PATCH /api/inscriptions/{id}/statut
+    // Update inscription status
     public function updateStatus(
         UpdateInscriptionRequest $request,
         int $id
@@ -84,7 +84,7 @@ class InscriptionController extends Controller
         return new InscriptionResource($inscription);
     }
 
-    // PATCH /api/inscriptions/{id}/annuler
+    // Cancel inscription
     public function annuler(Request $request, int $id)
     {
         $inscription = $this->inscriptionService->getById($id);

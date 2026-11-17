@@ -1,1 +1,160 @@
-<p>catalogue works!</p>
+<div class="min-h-screen bg-slate-100 flex">
+
+  <!-- Sidebar (shared) -->
+  <app-sidebar role="participant"></app-sidebar>
+
+  <!-- Main -->
+  <main class="flex-1 min-w-0">
+
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+
+      <div>
+        <h2 class="text-xl font-bold text-slate-800">
+          Catalogue des ateliers
+        </h2>
+        <p class="text-sm text-slate-500">
+          Bonjour {{ userName }}, inscrivez-vous aux prochains ateliers
+        </p>
+      </div>
+
+      <!-- Mobile navigation (sidebar hidden) -->
+      <div class="md:hidden flex items-center gap-3 text-sm">
+        <a routerLink="/participant/inscriptions" class="text-blue-600 font-medium" title="Mes inscriptions" aria-label="Mes inscriptions">
+          <lucide-icon [img]="ClipboardList" class="w-5 h-5"></lucide-icon>
+        </a>
+        <button (click)="logout()" class="text-slate-500" title="Déconnexion" aria-label="Déconnexion">
+          <lucide-icon [img]="LogOut" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+    </header>
+
+    <div class="p-6">
+
+      <!-- Error -->
+      <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-5">
+
+        {{ errorMessage }}
+
+        <button (click)="loadCatalogue()" class="ml-3 font-semibold underline">
+          Réessayer
+        </button>
+
+      </div>
+
+      <!-- Success -->
+      <div *ngIf="successMessage" class="bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg mb-5">
+
+        {{ successMessage }}
+
+        <a routerLink="/participant/inscriptions" class="ml-3 font-semibold underline">
+          Voir mes inscriptions
+        </a>
+
+      </div>
+
+      <!-- Search -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 mb-5">
+
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 flex text-slate-400 pointer-events-none"><lucide-icon [img]="Search" class="w-4 h-4"></lucide-icon></span>
+          <input type="text" [(ngModel)]="search" placeholder="Rechercher un atelier, un lieu ou un formateur..."
+            class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="bg-white rounded-xl border p-10 text-center text-slate-500">
+        Chargement du catalogue...
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!loading && filteredAteliers.length === 0"
+        class="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500">
+        Aucun atelier disponible pour le moment.
+      </div>
+
+      <!-- Ateliers -->
+      <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+
+        <div *ngFor="let atelier of filteredAteliers"
+          class="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+
+          <!-- Image (from backend) -->
+          <img *ngIf="atelier.image"
+            [src]="atelier.image"
+            [alt]="atelier.title"
+            class="w-full h-40 object-cover">
+
+          <div class="p-5 flex flex-col flex-1">
+
+            <h3 class="font-bold text-slate-800">
+              {{ atelier.title }}
+            </h3>
+
+            <p class="text-sm text-slate-500 mt-2 line-clamp-3">
+              {{ atelier.description || 'Aucune description' }}
+            </p>
+
+            <div class="mt-4 space-y-2 text-sm text-slate-600">
+              <p class="flex items-center gap-2"><lucide-icon [img]="GraduationCap" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.formateur?.name || 'Formateur non assigné' }}</p>
+              <p class="flex items-center gap-2"><lucide-icon [img]="MapPin" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.lieu }}</p>
+              <p class="flex items-center gap-2"><lucide-icon [img]="Calendar" class="w-4 h-4 shrink-0"></lucide-icon>{{ atelier.date_debut | date:'dd/MM/yyyy HH:mm' }} <lucide-icon [img]="ArrowRight" class="w-4 h-4 shrink-0 text-slate-400"></lucide-icon> {{ atelier.date_fin | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+
+            <!-- Places -->
+            <div class="mt-4">
+
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-500">
+                  {{ atelier.participants_count ?? 0 }} / {{ atelier.capacite }} inscrits
+                </span>
+                <span [ngClass]="isComplet(atelier) ? 'text-red-600' : 'text-green-600'" class="font-semibold">
+                  {{ isComplet(atelier) ? 'Complet' : placesRestantes(atelier) + ' place(s) restante(s)' }}
+                </span>
+              </div>
+
+              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full rounded-full"
+                  [ngClass]="isComplet(atelier) ? 'bg-red-500' : 'bg-blue-600'"
+                  [style.width.%]="atelier.capacite ? ((atelier.participants_count ?? 0) / atelier.capacite) * 100 : 0">
+                </div>
+              </div>
+
+            </div>
+
+            <div class="mt-auto pt-5">
+
+              <!-- Already registered -->
+              <div *ngIf="isInscrit(atelier)"
+                class="flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold"
+                [ngClass]="mesInscriptions[atelier.id].statut === 'confirmee'
+                  ? 'bg-green-50 text-green-700'
+                  : 'bg-amber-50 text-amber-700'">
+                <lucide-icon *ngIf="mesInscriptions[atelier.id].statut === 'confirmee'" [img]="CircleCheck" class="w-4 h-4 shrink-0"></lucide-icon>
+                <lucide-icon *ngIf="mesInscriptions[atelier.id].statut !== 'confirmee'" [img]="Hourglass" class="w-4 h-4 shrink-0"></lucide-icon>
+                {{ mesInscriptions[atelier.id].statut === 'confirmee' ? 'Inscription confirmée' : 'Inscription en attente' }}
+              </div>
+
+              <!-- Register -->
+              <button *ngIf="!isInscrit(atelier)"
+                (click)="inscrire(atelier)"
+                [disabled]="isComplet(atelier) || inscriptionEnCours === atelier.id"
+                class="w-full bg-blue-700 hover:bg-blue-800 text-white py-2 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                {{ inscriptionEnCours === atelier.id ? 'Inscription...' : (isComplet(atelier) ? 'Complet' : "S'inscrire") }}
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div>

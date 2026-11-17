@@ -16,7 +16,10 @@ import {
 } from '@angular/router';
 
 import { AtelierService } from 'src/app/core/services/atelier.service';
+import { UserService } from 'src/app/core/services/user.service';
 import { Atelier, AtelierStatut } from 'types/atelier.interface';
+import { User } from 'types/user.interface';
+import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 
 @Component({
   selector: 'app-edit-atelier',
@@ -24,12 +27,15 @@ import { Atelier, AtelierStatut } from 'types/atelier.interface';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    RouterLink
+    RouterLink,
+    LucideAngularModule
   ],
   templateUrl: './edit-atelier.component.html',
   styleUrls: ['./edit-atelier.component.css']
 })
 export class EditAtelierComponent implements OnInit {
+
+  readonly ArrowLeft = ArrowLeft;
 
   atelierForm: FormGroup;
 
@@ -38,15 +44,22 @@ export class EditAtelierComponent implements OnInit {
   loading = false;
   loadingData = true;
 
+  // Load error
+  loadError = '';
+
+  // Save error
   errorMessage = '';
 
   selectedImage: File | null = null;
+
+  formateurs: User[] = [];
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private atelierService: AtelierService
+    private atelierService: AtelierService,
+    private userService: UserService
   ) {
 
     this.atelierForm = this.fb.group({
@@ -72,7 +85,9 @@ export class EditAtelierComponent implements OnInit {
       statut: [
         'planifie' as AtelierStatut,
         Validators.required
-      ]
+      ],
+
+      formateur_id: ['', Validators.required]
 
     });
 
@@ -86,17 +101,37 @@ export class EditAtelierComponent implements OnInit {
 
     if (!this.id || Number.isNaN(this.id)) {
 
-      this.errorMessage = 'Identifiant atelier invalide.';
+      this.loadError = 'Identifiant atelier invalide.';
       this.loadingData = false;
 
       return;
     }
 
+    this.loadFormateurs();
     this.loadAtelier();
 
   }
 
-  // Récupérer les informations de l'atelier
+  // Get formateurs
+  loadFormateurs(): void {
+
+    this.userService.getAll('formateur').subscribe({
+
+      next: data => {
+        this.formateurs = data;
+      },
+
+      error: error => {
+        this.errorMessage =
+          error.error?.message ||
+          'Impossible de charger les formateurs.';
+      }
+
+    });
+
+  }
+
+  // Get atelier
   loadAtelier(): void {
 
     this.loadingData = true;
@@ -119,7 +154,9 @@ export class EditAtelierComponent implements OnInit {
 
           capacite: atelier.capacite,
 
-          statut: atelier.statut
+          statut: atelier.statut,
+
+          formateur_id: atelier.formateur?.id ?? ''
 
         });
 
@@ -129,9 +166,7 @@ export class EditAtelierComponent implements OnInit {
 
       error: (error) => {
 
-        console.error('Erreur chargement atelier:', error);
-
-        this.errorMessage =
+        this.loadError =
           error.error?.message ||
           'Impossible de charger les informations de cet atelier.';
 
@@ -143,7 +178,7 @@ export class EditAtelierComponent implements OnInit {
 
   }
 
-  // Convertir la date Laravel vers datetime-local
+  // Format date for input
   formatDate(date: string): string {
 
     if (!date) {
@@ -162,7 +197,7 @@ export class EditAtelierComponent implements OnInit {
 
   }
 
-  // Sélectionner une nouvelle image
+  // Select image
   onImageSelected(event: Event): void {
 
     const input = event.target as HTMLInputElement;
@@ -179,13 +214,20 @@ export class EditAtelierComponent implements OnInit {
 
   }
 
-  // Enregistrer les modifications
+  // Update atelier
   submit(): void {
 
     if (this.atelierForm.invalid) {
 
       this.atelierForm.markAllAsTouched();
 
+      return;
+    }
+
+    const { date_debut, date_fin } = this.atelierForm.value;
+
+    if (new Date(date_fin) <= new Date(date_debut)) {
+      this.errorMessage = 'La date de fin doit être après la date de début.';
       return;
     }
 
@@ -202,21 +244,17 @@ export class EditAtelierComponent implements OnInit {
       }
     );
 
-    // Image facultative
+    // Optional image
     if (this.selectedImage) {
 
       formData.append('image', this.selectedImage);
 
     }
 
-    // Laravel reçoit une requête PUT via POST
-    formData.append('_method', 'PUT');
-
+    // Update via POST route
     this.atelierService.update(this.id, formData).subscribe({
 
-      next: (response) => {
-
-        console.log('Atelier modifié avec succès:', response);
+      next: () => {
 
         this.loading = false;
 
@@ -225,8 +263,6 @@ export class EditAtelierComponent implements OnInit {
       },
 
       error: (error) => {
-
-        console.error('Erreur modification atelier:', error);
 
         this.loading = false;
 

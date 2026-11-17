@@ -6,23 +6,39 @@ import { RouterLink } from '@angular/router';
 
 import {
   Atelier,
+  AtelierParticipant,
   AtelierStatut
 } from 'types/atelier.interface';
 
 import { AtelierService } from 'src/app/core/services/atelier.service';
+import { SidebarComponent } from 'src/app/shared/components/sidebar/sidebar.component';
+import { StatutBadgeComponent } from 'src/app/shared/components/statut-badge/statut-badge.component';
+import { LucideAngularModule, Plus, Search, GraduationCap, Users, ChevronUp, ChevronDown, Pencil, Trash2 } from 'lucide-angular';
 
 @Component({
   selector: 'app-ateliers',
   standalone: true,
   imports: [
+    SidebarComponent,
+    StatutBadgeComponent,
     CommonModule,
     FormsModule,
-    RouterLink
+    RouterLink,
+    LucideAngularModule
   ],
   templateUrl: './ateliers.component.html',
   styleUrls: ['./ateliers.component.css']
 })
 export class AteliersComponent implements OnInit {
+
+  readonly Plus = Plus;
+  readonly Search = Search;
+  readonly GraduationCap = GraduationCap;
+  readonly Users = Users;
+  readonly ChevronUp = ChevronUp;
+  readonly ChevronDown = ChevronDown;
+  readonly Pencil = Pencil;
+  readonly Trash2 = Trash2;
 
   search = '';
 
@@ -33,6 +49,15 @@ export class AteliersComponent implements OnInit {
   loading = false;
 
   errorMessage = '';
+
+  // Opened participants list
+  openedAtelierId: number | null = null;
+
+  participants: AtelierParticipant[] = [];
+
+  loadingParticipants = false;
+
+  participantsError = '';
 
   constructor(
     private atelierService: AtelierService
@@ -57,8 +82,6 @@ export class AteliersComponent implements OnInit {
       },
 
       error: error => {
-
-        console.error('Erreur chargement ateliers:', error);
 
         this.errorMessage =
           error.error?.message ||
@@ -92,18 +115,39 @@ export class AteliersComponent implements OnInit {
 
   }
 
-  getStatutLabel(statut: AtelierStatut): string {
+  // Toggle participants list
+  toggleParticipants(atelier: Atelier): void {
 
-    const labels: Record<AtelierStatut, string> = {
+    if (this.openedAtelierId === atelier.id) {
+      this.openedAtelierId = null;
+      return;
+    }
 
-      planifie: 'Planifié',
-      en_cours: 'En cours',
-      termine: 'Terminé',
-      annule: 'Annulé'
+    this.openedAtelierId = atelier.id;
+    this.participants = [];
+    this.participantsError = '';
+    this.loadingParticipants = true;
 
-    };
+    this.atelierService.getParticipants(atelier.id).subscribe({
 
-    return labels[statut];
+      next: data => {
+
+        this.participants = data;
+        this.loadingParticipants = false;
+
+      },
+
+      error: error => {
+
+        this.participantsError =
+          error.error?.message ||
+          'Impossible de charger les participants.';
+
+        this.loadingParticipants = false;
+
+      }
+
+    });
 
   }
 
@@ -129,8 +173,6 @@ export class AteliersComponent implements OnInit {
 
       error: error => {
 
-        console.error('Erreur suppression:', error);
-
         alert(
           error.error?.message ||
           'Impossible de supprimer cet atelier.'
@@ -141,5 +183,4 @@ export class AteliersComponent implements OnInit {
     });
 
   }
-
 }

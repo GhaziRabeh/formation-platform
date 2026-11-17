@@ -14,11 +14,15 @@ class AtelierResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'lieu' => $this->lieu,
-            'image' => $this->image ? asset('storage/'.$this->image) : null,
+            'image' => $this->image
+                ? url('storage/' . ltrim(str_replace('storage/', '', $this->image), '/'))
+                : null,
             'date_debut' => $this->date_debut,
             'date_fin' => $this->date_fin,
             'capacite' => $this->capacite,
             'statut' => $this->statut,
+
+            'participants_count' => $this->whenCounted('participants'),
 
             'formateur' => [
                 'id' => $this->whenLoaded('formateur', fn () => $this->formateur?->id),

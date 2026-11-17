@@ -1,3 +1,4 @@
+import { User } from './user.interface';
 
 export interface LoginRequest {
   email: string;
@@ -7,12 +8,13 @@ export interface LoginRequest {
 export interface AuthResponse {
   message?: string;
   token?: string;
-  user?: {
-    id: number;
-    name: string;
-    email: string;
-    role: 'admin' | 'formateur' | 'participant';
-  };
+  user?: User;
+}
+
+// API error response
+export interface AuthErrorResponse {
+  message: string;
+  errors?: Record<string, string[]>;
 }
 
 export interface RegisterRequest {
@@ -20,6 +22,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   password_confirmation: string;
+  role: 'participant' | 'formateur';
 }
 
 export interface VerifyEmailRequest {

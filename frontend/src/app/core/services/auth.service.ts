@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, finalize, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 import {
@@ -29,21 +29,19 @@ export class AuthService {
     private cookieService: CookieService
   ) {}
 
-  // =====================================
-  // TOKEN MANAGEMENT
-  // =====================================
-
+  // Get token
   getToken(): string | null {
     const token = this.cookieService.get('token');
     return token || null;
   }
 
+  // Save token
   setToken(token: string): void {
-    // Supprimer les anciennes versions du cookie
+    // Remove old cookies
     this.cookieService.delete('token', '/', 'localhost');
     this.cookieService.delete('token', '/');
 
-    // Enregistrer un cookie sans domaine explicite
+    // Save token cookie
     this.cookieService.set(
       'token',
       token,
@@ -55,15 +53,13 @@ export class AuthService {
     );
   }
 
+  // Remove token
   removeToken(): void {
     this.cookieService.delete('token', '/', 'localhost');
     this.cookieService.delete('token', '/');
   }
 
-  // =====================================
-  // REGISTER
-  // =====================================
-
+  // Register user
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       `${this.apiUrl}/register`,
@@ -71,10 +67,7 @@ export class AuthService {
     );
   }
 
-  // =====================================
-  // VERIFY EMAIL
-  // =====================================
-
+  // Verify email
   verifyEmail(data: VerifyEmailRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       `${this.apiUrl}/verify-email`,
@@ -82,10 +75,7 @@ export class AuthService {
     );
   }
 
-  // =====================================
-  // RESEND OTP
-  // =====================================
-
+  // Resend OTP
   resendEmailOtp(email: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       `${this.apiUrl}/resend-email-otp`,
@@ -93,10 +83,7 @@ export class AuthService {
     );
   }
 
-  // =====================================
-  // LOGIN
-  // =====================================
-
+  // Login user
   login(data: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       `${this.apiUrl}/login`,
@@ -114,10 +101,7 @@ export class AuthService {
     );
   }
 
-  // =====================================
-  // CURRENT USER
-  // =====================================
-
+  // Get current user
   getCurrentUser(): Observable<User> {
     return this.http.get<User>(
       `${this.apiUrl}/user`
@@ -128,10 +112,7 @@ export class AuthService {
     );
   }
 
-  // =====================================
-  // FORGOT PASSWORD
-  // =====================================
-
+  // Forgot password
   forgotPassword(data: ForgotPasswordRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       `${this.apiUrl}/forgot-password`,
@@ -139,10 +120,7 @@ export class AuthService {
     );
   }
 
-  // =====================================
-  // RESET PASSWORD
-  // =====================================
-
+  // Reset password
   resetPassword(data: ResetPasswordRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
       `${this.apiUrl}/reset-password`,
@@ -150,41 +128,29 @@ export class AuthService {
     );
   }
 
-  // =====================================
-  // LOGOUT
-  // =====================================
-
+  // Logout user
   logout(): Observable<any> {
     return this.http.post(
       `${this.apiUrl}/logout`,
       {}
     ).pipe(
-      tap(() => {
+      finalize(() => {
         this.clearSession();
       })
     );
   }
 
-  // =====================================
-  // GET USER
-  // =====================================
-
+  // Get cached user
   getUser(): User | null {
     return this.currentUser;
   }
 
-  // =====================================
-  // AUTHENTICATION
-  // =====================================
-
+  // Check authentication
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
-  // =====================================
-  // ROLE
-  // =====================================
-
+  // Check user role
   hasRole(role: string): boolean {
     return this.currentUser?.role === role;
   }
@@ -201,10 +167,7 @@ export class AuthService {
     return this.hasRole('participant');
   }
 
-  // =====================================
-  // CLEAR SESSION
-  // =====================================
-
+  // Clear session
   clearSession(): void {
     this.removeToken();
     this.currentUser = null;
