@@ -2,7 +2,14 @@
 
 Plateforme web de gestion d'ateliers de formation, composée d'une **API REST Laravel** (backend) et d'une **application Angular** (frontend).
 
-Dépôt GitHub : [github.com/GhaziRabeh/formation-platform](https://github.com/GhaziRabeh/formation-platform)
+| | Lien |
+|---|---|
+| 🌐 **Application en ligne** | **[https://formation-platform-ea43.onrender.com](https://formation-platform-ea43.onrender.com)** |
+| 📦 Dépôt GitHub | [github.com/GhaziRabeh/formation-platform](https://github.com/GhaziRabeh/formation-platform) |
+
+Comptes de démonstration (mot de passe `Password123`) : `admin@example.com`, `formateur@example.com`, `participant@example.com`.
+
+> L'application est hébergée sur l'offre gratuite de Render : après une période d'inactivité, le premier chargement peut prendre environ une minute.
 
 ---
 
@@ -678,19 +685,23 @@ Conserver la valeur affichée (`base64:...`).
 | Variable | Valeur |
 |---|---|
 | `APP_KEY` | Valeur obtenue à l'étape 3 |
-| `APP_URL` | URL du service, par exemple `https://formation-platform.onrender.com` |
+| `APP_URL` | URL du service, par exemple `https://formation-platform-ea43.onrender.com` |
 | `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Informations Aiven de l'étape 2 |
 | `DB_SSL_CA_CERT` | Contenu complet du fichier `ca.pem` (lignes `BEGIN` et `END` comprises) |
+| `MAIL_USERNAME`, `MAIL_FROM_ADDRESS` | Adresse Gmail utilisée pour envoyer les codes OTP |
+| `MAIL_PASSWORD` | **Mot de passe d'application** Gmail (16 caractères, et non le mot de passe du compte) |
 
-Les autres variables sont déjà définies dans `render.yaml` : `APP_ENV=production`, `APP_DEBUG=false`, `LOG_CHANNEL=stderr`, `MAIL_MAILER=log`, `DB_CONNECTION=mysql`, `SEED_DEMO_DATA=true`.
+Les autres variables sont déjà définies dans `render.yaml` : `APP_ENV=production`, `APP_DEBUG=false`, `LOG_CHANNEL=stderr`, `MAIL_MAILER=smtp` avec `smtp.gmail.com:587` (TLS), `DB_CONNECTION=mysql`, `SEED_DEMO_DATA=true`.
 
 4. Lancer le déploiement. Le premier build prend plusieurs minutes ; l'avancement est visible dans l'onglet *Logs*.
 
 **Étape 5 — Vérifier**
 
+Application déployée : **[https://formation-platform-ea43.onrender.com](https://formation-platform-ea43.onrender.com)**
+
 - Ouvrir l'URL Render : la page de connexion Angular s'affiche.
 - Se connecter avec `admin@example.com` / `Password123`.
-- Vérifier l'API : `https://<service>.onrender.com/api/user` doit répondre `{"message":"Unauthenticated."}`.
+- Vérifier l'API : `https://formation-platform-ea43.onrender.com/api/user` doit répondre `{"message":"Unauthenticated."}`.
 
 Chaque `git push` sur `main` déclenche ensuite un nouveau déploiement automatique.
 
@@ -698,7 +709,7 @@ Chaque `git push` sur `main` déclenche ensuite un nouveau déploiement automati
 
 - **Mise en veille** : le service Render gratuit s'arrête après une période d'inactivité ; la première visite suivante prend environ une minute.
 - **Disque éphémère** : les fichiers écrits sur le serveur sont perdus à chaque redémarrage. Les images de démonstration sont régénérées automatiquement, mais **les images téléversées par l'administrateur disparaissent** au redémarrage. Un stockage externe (S3, Cloudinary...) serait nécessaire pour les conserver.
-- **Emails** : avec `MAIL_MAILER=log`, les codes OTP ne sont pas envoyés ; ils apparaissent dans l'onglet *Logs* de Render. Pour un envoi réel, configurer les variables `MAIL_*` avec un fournisseur SMTP.
+- **Emails** : les codes OTP sont envoyés par Gmail (SMTP). Le mot de passe d'application se crée dans *Compte Google → Sécurité → Validation en deux étapes → Mots de passe des applications*. En cas d'échec d'envoi, l'erreur apparaît dans l'onglet *Logs* de Render.
 - **Comptes de démonstration** : ils sont accessibles publiquement avec le mot de passe `Password123` ; les supprimer ou changer leurs mots de passe pour un usage réel.
 - Les conditions des offres gratuites (Render, Aiven) peuvent évoluer : les vérifier lors de la création des services.
 
@@ -1570,5 +1581,7 @@ L'état actuel est stable : le problème CORS est résolu, la communication entr
 Je vous remercie pour l'attention portée à ce projet et pour votre compréhension concernant le retard de livraison. La version mise à jour et corrigée, avec le code source, le MCD et cette documentation, est disponible sur GitHub :
 
 **[https://github.com/GhaziRabeh/formation-platform](https://github.com/GhaziRabeh/formation-platform)**
+
+L'application est également accessible en ligne : **[https://formation-platform-ea43.onrender.com](https://formation-platform-ea43.onrender.com)**
 
 Je reste disponible pour toute question ou démonstration de l'application.
